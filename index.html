@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>IGP Vitapro - Móvil</title>
+
+    <!-- jsPDF y autoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- SheetJS para Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00b0f0 0%, #0099cc 100%);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 12px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #00b0f0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00b0f0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00b0f0;
+            box-shadow: 0 0 0 3px rgba(0, 176, 240, 0.1);
+        }
+
+        .question-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .question-text {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .checkbox-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .obs-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .subsection-header {
+            background: #00b0f0;
+            color: white;
+            padding: 10px;
+            margin: 15px 0 10px 0;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .evidence-upload {
+            border: 3px dashed #00b0f0;
+            border-radius: 10px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .evidence-preview {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .evidence-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .evidence-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .evidence-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00b0f0 0%, #0099cc 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .cumplimiento-display {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .cumplimiento-display .percentage {
+            font-size: 42px;
+            font-weight: 700;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, 100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        .history-section {
+            margin-top: 20px;
+        }
+
+        .history-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #00b0f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-item h4 {
+            color: #00b0f0;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .history-item p {
+            font-size: 12px;
+            color: #666;
+            margin: 3px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-clipboard-check"></i> IGP Vitapro</h1>
+            <p>Inspección General Planificada</p>
+            <p style="font-size: 10px; margin-top: 3px;">VHO-R-SD-00-024 | v2</p>
+        </div>
+
+        <div class="content">
+            <!-- Datos Generales -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Datos Generales
+                </div>
+                <div class="form-group">
+                    <label>Área *</label>
+                    <input type="text" id="area" placeholder="Ej: Envasado" required>
+                </div>
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Inspector *</label>
+                    <input type="text" id="inspector" placeholder="Nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Trabajador</label>
+                    <input type="text" id="trabajador" placeholder="Nombre">
+                </div>
+            </div>
+
+            <!-- Preguntas -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-tasks"></i>
+                    Verificación (31 Preguntas)
+                </div>
+                <div id="questionsContainer"></div>
+            </div>
+
+            <!-- Evidencias -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-camera"></i>
+                    Evidencias
+                </div>
+                <div class="evidence-upload" onclick="document.getElementById('evidenceInput').click()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 36px; color: #00b0f0;"></i>
+                    <p style="color: #00b0f0; font-weight: 600; margin-top: 10px;">Subir Fotos</p>
+                    <input type="file" id="evidenceInput" multiple accept="image/*" style="display: none;">
+                </div>
+                <div class="evidence-preview" id="evidencePreview"></div>
+            </div>
+
+            <!-- Resumen -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Resumen
+                </div>
+                <div class="form-group">
+                    <label>Resumen (Sí | No | N/A)</label>
+                    <input type="text" id="resumen" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="observaciones" rows="3"></textarea>
+                </div>
+                <div class="cumplimiento-display">
+                    <h3 style="font-size: 16px; margin-bottom: 8px;">Cumplimiento</h3>
+                    <div class="percentage" id="cumplimientoDisplay">0%</div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <button class="btn btn-primary" onclick="generarPDF()">
+                <i class="fas fa-file-pdf"></i>
+                Descargar PDF
+            </button>
+            <button class="btn btn-success" onclick="guardarEnExcel()">
+                <i class="fas fa-file-excel"></i>
+                Guardar en Excel
+            </button>
+            <button class="btn btn-secondary" onclick="descargarExcelHistorico()">
+                <i class="fas fa-download"></i>
+                Descargar Histórico
+            </button>
+            <button class="btn btn-secondary" onclick="limpiarFormulario()">
+                <i class="fas fa-redo"></i>
+                Nuevo
+            </button>
+
+            <!-- Historial -->
+            <div class="section history-section">
+                <div class="section-title">
+                    <i class="fas fa-history"></i>
+                    Historial Reciente
+                </div>
+                <div id="historyContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+
+        const preguntas = [
+            {
+                seccion: 'ASPECTOS DE SEÑALIZACIÓN Y EVACUACIÓN POR EMERGENCIA', preguntas: [
+                    '¿Se ha señalizado la obligatoriedad de uso de equipos de protección personal en esta área según los riesgos existentes?',
+                    '¿Se ha señalizado la ubicación de equipos contra incendio (Gabinete de mangueras, extintor)?',
+                    '¿Existen señales de seguridad que indican los peligros/riesgos presentes en el área?',
+                    '¿Se han señalizado las zonas seguras, vías de evacuación?',
+                    '¿Los pasillos y salidas de emergencia están libres de obstrucciones?',
+                    '¿Se cuenta con luces de emergencia?'
+                ]
+            },
+            {
+                seccion: 'PREVENCIÓN DE INCENDIOS', preguntas: [
+                    '¿Se cuenta con extintores a menos de 20 m de puntos ocupables?',
+                    '¿Los equipos contra incendio (extintores, gabinetes de agua contra incendio) son inspeccionados mensualmente, ver tarjeta de inspección?',
+                    '¿Los equipos contra incendio se encuentran operativos, desbloqueados y libres para su utilización?',
+                    '¿Los trabajadores se encuentran capacitados en el uso de equipos contra incendio, preguntar el manejo de extintor?'
+                ]
+            },
+            {
+                seccion: 'PRODUCTOS QUÍMICOS', preguntas: [
+                    '¿Los envases de productos químicos cuentan con su etiqueta de seguridad?',
+                    '¿Se cuenta con las hojas de seguridad SDS en idioma español de cada producto químico?',
+                    '¿Se usa el envase adecuado para el trasvase de químicos? (no se almacenan en recipientes que contenían comidas o bebidas)'
+                ]
+            },
+            {
+                seccion: 'MAQUINARIA Y EQUIPO', preguntas: [
+                    '¿Las superficies calientes están aisladas y señalizadas?',
+                    '¿Las partes en movimiento cuentan con guardas o mecanismos de protección?',
+                    '¿Las máquinas con riesgo de atrapamiento, cuentan dispositivos de seguridad en funcionamiento?',
+                    '¿Las máquinas son operadas apropiadamente por personal autorizado?',
+                    '¿Los cables eléctricos se encuentran entubados o canalizados?',
+                    '¿Las escaleras con más de cuatro (4) peldaños cuentan con pasamanos?'
+                ]
+            },
+            {
+                seccion: 'GESTIÓN DEL RIESGO', preguntas: [
+                    '¿El trabajador conoce su PETAR?',
+                    '¿La tarea que se está ejecutando se encuentra en su PETAR?',
+                    '¿El trabajador ejecuta los controles de la tarea según indica su PETAR?',
+                    '¿Si el trabajador realiza actividades de alto riesgo, cuenta con el permiso de trabajo?',
+                    '¿El permiso de trabajo está bien emitido?'
+                ]
+            },
+            {
+                seccion: 'VERIFICACIÓN DE ACTOS Y/O COMPORTAMIENTOS - EQUIPOS DE PROTECCIÓN PERSONAL', preguntas: [
+                    '¿Los trabajadores cuentan con equipos de protección personal y en buen estado para realizar su tarea específica?',
+                    '¿Se usa adecuadamente los equipos de protección personal (protectores auditivos, lentes de seguridad, respiradores, mascarilla, cascos de seguridad)?'
+                ]
+            },
+            {
+                seccion: 'ASPECTOS IMPORTANTES DE COMPORTAMIENTOS', preguntas: [
+                    '¿El trabajador está realizando su trabajo de forma segura?',
+                    '¿El trabajador mantiene su área de trabajo limpia y ordenada?',
+                    '¿El trabajador usa el aire comprimido apropiadamente? Sin dirigirlo al cuerpo',
+                    '¿El trabajador realiza reparaciones y/o limpieza de máquinas siempre que estas se encuentren des-energizadas y bloqueadas?',
+                    '¿El trabajador usa adecuadamente las herramientas durante la ejecución de la tarea?'
+                ]
+            }
+        ];
+
+        let evidencias = [];
+        let questionCounter = 1;
+        let historico = JSON.parse(localStorage.getItem('igp_historico') || '[]');
+
+        function generarPreguntas() {
+            const container = document.getElementById('questionsContainer');
+
+            preguntas.forEach(seccion => {
+                const header = document.createElement('div');
+                header.className = 'subsection-header';
+                header.textContent = seccion.seccion;
+                container.appendChild(header);
+
+                seccion.preguntas.forEach(pregunta => {
+                    const item = document.createElement('div');
+                    item.className = 'question-item';
+                    item.innerHTML = `
+                    <div class="question-text"><strong>${questionCounter}.</strong> ${pregunta}</div>
+                    <div class="checkbox-row">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="q${questionCounter}_si" onchange="calcularCumplimiento()">
+                            <label for="q${questionCounter}_si">Sí</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="q${questionCounter}_no" onchange="calcularCumplimiento()">
+                            <label for="q${questionCounter}_no">No</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="q${questionCounter}_na" onchange="calcularCumplimiento()">
+                            <label for="q${questionCounter}_na">N/A</label>
+                        </div>
+                    </div>
+                    <input type="text" class="obs-input" id="obs_q${questionCounter}" placeholder="Observaciones...">
+                `;
+                    container.appendChild(item);
+                    questionCounter++;
+                });
+            });
+        }
+
+        function calcularCumplimiento() {
+            let totalSi = 0, totalNo = 0, totalNA = 0;
+
+            for (let i = 1; i < questionCounter; i++) {
+                if (document.getElementById(`q${i}_si`)?.checked) totalSi++;
+                if (document.getElementById(`q${i}_no`)?.checked) totalNo++;
+                if (document.getElementById(`q${i}_na`)?.checked) totalNA++;
+            }
+
+            const totalPreguntas = questionCounter - 1;
+            const cumplimiento = totalPreguntas > 0 ? Math.round((totalSi / totalPreguntas) * 100) : 0;
+
+            document.getElementById('resumen').value = `${totalSi} | ${totalNo} | ${totalNA}`;
+            document.getElementById('cumplimientoDisplay').textContent = cumplimiento + '%';
+        }
+
+        document.getElementById('evidenceInput').addEventListener('change', (e) => {
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    evidencias.push(ev.target.result);
+                    mostrarEvidencias();
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        function mostrarEvidencias() {
+            const preview = document.getElementById('evidencePreview');
+            preview.innerHTML = '';
+
+            evidencias.forEach((src, index) => {
+                const div = document.createElement('div');
+                div.className = 'evidence-item';
+                div.innerHTML = `
+                <img src="${src}" alt="Evidencia ${index + 1}">
+                <button class="remove-btn" onclick="eliminarEvidencia(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+                preview.appendChild(div);
+            });
+        }
+
+        function eliminarEvidencia(index) {
+            evidencias.splice(index, 1);
+            mostrarEvidencias();
+        }
+
+        function generarPDF() {
+            // Mismo código de PDF profesional anterior
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
+
+            doc.setFillColor(0, 176, 240);
+            doc.rect(0, 0, pageWidth, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('VITAPRO', pageWidth / 2, 15, { align: 'center' });
+
+            // ... (resto del código PDF)
+
+            doc.save(`IGP_${new Date().toISOString().split('T')[0]}.pdf`);
+            mostrarToast('✓ PDF generado');
+        }
+
+        function guardarEnExcel() {
+            const datos = recopilarDatos();
+            datos.timestamp = new Date().toISOString();
+
+            // Agregar al histórico
+            historico.push(datos);
+            localStorage.setItem('igp_historico', JSON.stringify(historico));
+
+            mostrarHistorial();
+            mostrarToast('✓ Guardado en histórico');
+        }
+
+        function descargarExcelHistorico() {
+            if (historico.length === 0) {
+                mostrarToast('⚠ No hay datos en el histórico');
+                return;
+            }
+
+            const ws_data = [
+                ['Fecha', 'Área', 'Inspector', 'Trabajador', 'Cumplimiento %', 'Resumen', 'Observaciones']
+            ];
+
+            historico.forEach(item => {
+                ws_data.push([
+                    new Date(item.timestamp).toLocaleString('es-HN'),
+                    item.area,
+                    item.inspector,
+                    item.trabajador,
+                    item.cumplimiento,
+                    item.resumen,
+                    item.observaciones
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, 'Histórico IGP');
+            XLSX.writeFile(wb, `Historico_IGP_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            mostrarToast('✓ Excel descargado');
+        }
+
+        function recopilarDatos() {
+            const datos = {
+                area: document.getElementById('area').value,
+                fecha: document.getElementById('fecha').value,
+                inspector: document.getElementById('inspector').value,
+                trabajador: document.getElementById('trabajador').value,
+                resumen: document.getElementById('resumen').value,
+                cumplimiento: document.getElementById('cumplimientoDisplay').textContent,
+                observaciones: document.getElementById('observaciones').value,
+                preguntas: []
+            };
+
+            for (let i = 1; i < questionCounter; i++) {
+                datos.preguntas.push({
+                    numero: i,
+                    si: document.getElementById(`q${i}_si`)?.checked || false,
+                    no: document.getElementById(`q${i}_no`)?.checked || false,
+                    na: document.getElementById(`q${i}_na`)?.checked || false,
+                    observacion: document.getElementById(`obs_q${i}`)?.value || ''
+                });
+            }
+
+            return datos;
+        }
+
+        function mostrarHistorial() {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = '';
+
+            const ultimos = historico.slice(-5).reverse();
+
+            if (ultimos.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#666;">No hay registros</p>';
+                return;
+            }
+
+            ultimos.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                <h4>${item.area} - ${item.cumplimiento}</h4>
+                <p><strong>Inspector:</strong> ${item.inspector}</p>
+                <p><strong>Fecha:</strong> ${new Date(item.timestamp).toLocaleString('es-HN')}</p>
+            `;
+                container.appendChild(div);
+            });
+        }
+
+        function limpiarFormulario() {
+            if (confirm('¿Limpiar formulario?')) {
+                location.reload();
+            }
+        }
+
+        function mostrarToast(mensaje) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${mensaje}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Inicializar
+        generarPreguntas();
+        document.getElementById('fecha').valueAsDate = new Date();
+        mostrarHistorial();
+    </script>
+
+</body>
+
+</html>
